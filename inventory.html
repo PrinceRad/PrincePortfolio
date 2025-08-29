@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy': '#1e3a8a',
+                        'light-blue': '#dbeafe',
+                        'steel': '#64748b'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-navy rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">IM</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-800">InventoryPro</h1>
+                </div>
+                <a href="index.html" class="bg-navy hover:bg-blue-800 text-white px-6 py-2 rounded-lg transition-colors duration-200 font-medium inline-block">
+                    ← Back to Portfolio
+                </a>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Alert Banner -->
+    <div id="alertBanner" class="bg-red-50 border-l-4 border-red-400 p-4">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center">
+                <span class="text-red-600 mr-2">⚠️</span>
+                <p class="text-red-700">
+                    <span class="font-medium">Low Stock Alert:</span> 
+                    <span id="lowStockCount">3</span> items need restocking
+                </p>
+                <button onclick="viewLowStock()" class="ml-4 text-red-600 hover:text-red-800 underline">View Details</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Inventory Dashboard</h2>
+            <p class="text-gray-600">Real-time stock tracking and management for your business</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Items</p>
+                        <p class="text-2xl font-bold text-gray-800" id="totalItems">247</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">📦</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Low Stock</p>
+                        <p class="text-2xl font-bold text-red-600" id="lowStockItems">3</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">⚠️</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Value</p>
+                        <p class="text-2xl font-bold text-green-600" id="totalValue">$45,230</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">💰</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Categories</p>
+                        <p class="text-2xl font-bold text-gray-800" id="totalCategories">12</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">📊</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="addNewItem()" class="bg-navy hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                        <span class="mr-2">+</span> Add Item
+                    </button>
+                    <button onclick="exportData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                        <span class="mr-2">📊</span> Export Data
+                    </button>
+                    <button onclick="generateReport()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                        <span class="mr-2">📋</span> Generate Report
+                    </button>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <input type="text" placeholder="Search inventory..." class="border border-gray-300 rounded-lg px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent" onkeyup="searchInventory(this.value)">
+                    <select class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-navy" onchange="filterByCategory(this.value)">
+                        <option value="">All Categories</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="books">Books</option>
+                        <option value="home">Home & Garden</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Current Inventory</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min. Stock</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Table rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Actions Panel -->
+        <div class="mt-8 grid md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                        <div>
+                            <p class="font-medium text-gray-800">Wireless Headphones</p>
+                            <p class="text-sm text-gray-500">Stock updated: +25 units</p>
+                        </div>
+                        <span class="text-xs text-gray-400">2 min ago</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                        <div>
+                            <p class="font-medium text-gray-800">Office Chair</p>
+                            <p class="text-sm text-gray-500">Stock sold: -3 units</p>
+                        </div>
+                        <span class="text-xs text-gray-400">15 min ago</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                        <div>
+                            <p class="font-medium text-gray-800">LED Monitor</p>
+                            <p class="text-sm text-gray-500">New item added</p>
+                        </div>
+                        <span class="text-xs text-gray-400">1 hour ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Stock Update</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Product ID or Name</label>
+                        <input type="text" id="quickUpdateProduct" placeholder="Enter product ID or name" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">New Stock Quantity</label>
+                        <input type="number" id="quickUpdateQuantity" placeholder="Enter quantity" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy">
+                    </div>
+                    <button onclick="quickUpdateStock()" class="w-full bg-navy hover:bg-blue-800 text-white py-2 rounded-lg transition-colors duration-200">
+                        Update Stock
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <p class="text-center text-gray-500">Portfolio Demo - Inventory Management System</p>
+        </div>
+    </footer>
+
+    <script>
+        // Sample inventory data
+        let inventoryData = [
+            { id: 'WH001', name: 'Wireless Headphones', category: 'Electronics', stock: 45, minStock: 10, price: 89.99, status: 'In Stock' },
+            { id: 'OC002', name: 'Office Chair', category: 'Furniture', stock: 8, minStock: 5, price: 299.99, status: 'In Stock' },
+            { id: 'LM003', name: 'LED Monitor', category: 'Electronics', stock: 3, minStock: 8, price: 249.99, status: 'Low Stock' },
+            { id: 'KB004', name: 'Mechanical Keyboard', category: 'Electronics', stock: 22, minStock: 15, price: 129.99, status: 'In Stock' },
+            { id: 'DL005', name: 'Desk Lamp', category: 'Furniture', stock: 2, minStock: 10, price: 45.99, status: 'Low Stock' },
+            { id: 'NB006', name: 'Notebook Set', category: 'Stationery', stock: 1, minStock: 20, price: 12.99, status: 'Critical' },
+            { id: 'MS007', name: 'Wireless Mouse', category: 'Electronics', stock: 67, minStock: 25, price: 39.99, status: 'In Stock' },
+            { id: 'PL008', name: 'Desk Plant', category: 'Home', stock: 15, minStock: 8, price: 24.99, status: 'In Stock' }
+        ];
+
+        let filteredData = [...inventoryData];
+
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+
+            filteredData.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                
+                const statusColor = item.status === 'In Stock' ? 'bg-green-100 text-green-800' : 
+                                  item.status === 'Low Stock' ? 'bg-yellow-100 text-yellow-800' : 
+                                  'bg-red-100 text-red-800';
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">${item.name}</div>
+                            <div class="text-sm text-gray-500">ID: ${item.id}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.category}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${item.stock}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.minStock}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${item.price}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColor}">${item.status}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editItem('${item.id}')" class="text-navy hover:text-blue-800 mr-3">Edit</button>
+                        <button onclick="deleteItem('${item.id}')" class="text-red-600 hover:text-red-800">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function searchInventory(query) {
+            filteredData = inventoryData.filter(item => 
+                item.name.toLowerCase().includes(query.toLowerCase()) ||
+                item.id.toLowerCase().includes(query.toLowerCase()) ||
+                item.category.toLowerCase().includes(query.toLowerCase())
+            );
+            renderInventoryTable();
+        }
+
+        function filterByCategory(category) {
+            if (category === '') {
+                filteredData = [...inventoryData];
+            } else {
+                filteredData = inventoryData.filter(item => 
+                    item.category.toLowerCase() === category.toLowerCase()
+                );
+            }
+            renderInventoryTable();
+        }
+
+        function addNewItem() {
+            alert('Add new item form would open here. This is a portfolio demo showcasing the interface design and functionality.');
+        }
+
+        function exportData() {
+            // Simulate data export
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "ID,Name,Category,Stock,Min Stock,Price,Status\n" +
+                inventoryData.map(item => 
+                    `${item.id},${item.name},${item.category},${item.stock},${item.minStock},${item.price},${item.status}`
+                ).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "inventory_export.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function generateReport() {
+            alert('Detailed inventory report would be generated here. This demo shows the real-time tracking capabilities.');
+        }
+
+        function editItem(id) {
+            alert(`Edit item ${id} - This would open an edit form in the full application.`);
+        }
+
+        function deleteItem(id) {
+            if (confirm(`Are you sure you want to delete item ${id}?`)) {
+                inventoryData = inventoryData.filter(item => item.id !== id);
+                filteredData = filteredData.filter(item => item.id !== id);
+                renderInventoryTable();
+                updateStats();
+            }
+        }
+
+        function quickUpdateStock() {
+            const productInput = document.getElementById('quickUpdateProduct').value;
+            const quantityInput = document.getElementById('quickUpdateQuantity').value;
+            
+            if (!productInput || !quantityInput) {
+                alert('Please enter both product ID/name and quantity.');
+                return;
+            }
+
+            const item = inventoryData.find(item => 
+                item.id.toLowerCase() === productInput.toLowerCase() || 
+                item.name.toLowerCase() === productInput.toLowerCase()
+            );
+
+            if (item) {
+                item.stock = parseInt(quantityInput);
+                item.status = item.stock <= item.minStock ? 
+                    (item.stock <= item.minStock / 2 ? 'Critical' : 'Low Stock') : 'In Stock';
+                
+                renderInventoryTable();
+                updateStats();
+                
+                document.getElementById('quickUpdateProduct').value = '';
+                document.getElementById('quickUpdateQuantity').value = '';
+                
+                alert(`Stock updated successfully for ${item.name}!`);
+            } else {
+                alert('Product not found. Please check the ID or name.');
+            }
+        }
+
+        function updateStats() {
+            const lowStockItems = inventoryData.filter(item => item.stock <= item.minStock).length;
+            const totalValue = inventoryData.reduce((sum, item) => sum + (item.stock * item.price), 0);
+            
+            document.getElementById('totalItems').textContent = inventoryData.length;
+            document.getElementById('lowStockItems').textContent = lowStockItems;
+            document.getElementById('lowStockCount').textContent = lowStockItems;
+            document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString()}`;
+        }
+
+        function viewLowStock() {
+            const lowStockItems = inventoryData.filter(item => item.stock <= item.minStock);
+            const itemNames = lowStockItems.map(item => `${item.name} (${item.stock} left)`).join('\n');
+            alert(`Low Stock Items:\n\n${itemNames}`);
+        }
+
+        function goBackToPortfolio() {
+            alert('This would navigate back to your main portfolio page.');
+        }
+
+        // Simulate real-time updates
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // Randomly update stock for demonstration
+                const randomItem = inventoryData[Math.floor(Math.random() * inventoryData.length)];
+                const change = Math.floor(Math.random() * 5) - 2; // -2 to +2
+                randomItem.stock = Math.max(0, randomItem.stock + change);
+                randomItem.status = randomItem.stock <= randomItem.minStock ? 
+                    (randomItem.stock <= randomItem.minStock / 2 ? 'Critical' : 'Low Stock') : 'In Stock';
+                
+                renderInventoryTable();
+                updateStats();
+            }, 10000); // Update every 10 seconds
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            renderInventoryTable();
+            updateStats();
+            simulateRealTimeUpdates();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96f6c740136e7c4e',t:'MTc1NTI0MDg0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
